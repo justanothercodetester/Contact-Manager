@@ -1,20 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<BorderPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            prefHeight="600.0" prefWidth="800.0"
-            stylesheets="@main.css">
+<BorderPane fx:id="root" prefHeight="600.0" prefWidth="800.0" stylesheets="@main.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.ContactManager.MainController">
 
     <!-- Top Toolbar -->
     <top>
         <ToolBar>
-            <Button fx:id="addContactButton" text="Add Contact"/>
-            <Button fx:id="editContactButton" text="Edit Contact" disable="true"/>
-            <Button fx:id="deleteContactButton" text="Delete Contact" disable="true"/>
+            <Button onAction="#addContactButton" text="Add Contact" />
+            <Button fx:id="editContactButton" disable="true" onAction="#editContactButton" text="Edit Contact" />
+            <Button fx:id="deleteContactButton" disable="true" onAction="#deleteContactButton" text="Delete Contact" />
         </ToolBar>
     </top>
 
@@ -22,55 +30,72 @@
     <left>
         <VBox prefWidth="250.0" spacing="10.0">
             <padding>
-                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
             </padding>
             
-            <TextField fx:id="searchField" promptText="Search contacts..."/>
+            <TextField fx:id="searchField" promptText="Search contacts..." />
             
-            <ListView fx:id="contactListView" VBox.vgrow="ALWAYS"/>
+            <ListView fx:id="contactListView" VBox.vgrow="ALWAYS" />
         </VBox>
     </left>
 
     <!-- Right: Contact Details -->
     <center>
-        <VBox spacing="15.0" alignment="TOP_LEFT">
+        <VBox alignment="TOP_LEFT" spacing="15.0">
             <padding>
-                <Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/>
+                <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
             </padding>
 
-            <Label fx:id="noSelectionLabel" text="Select a contact to view details" 
-                   style="-fx-font-size: 16px; -fx-text-fill: gray;"/>
+            <Label fx:id="noSelectionLabel" style="-fx-font-size: 16px; -fx-text-fill: gray;" text="Select a contact to view details" />
+         <VBox fx:id="contactDetailsPane" alignment="TOP_CENTER" spacing="20.0" visible="false">
+            <children>
+               <Label fx:id="nameLabel" alignment="CENTER">
+                  <font>
+                     <Font name="System Bold" size="28.0" />
+                  </font>
+               </Label>
 
-            <VBox fx:id="contactDetailsPane" spacing="12.0" visible="false" managed="false">
-                <Label fx:id="nameLabel" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
-                
-                <Separator/>
-                
-                <GridPane hgap="10.0" vgap="12.0">
-                    <columnConstraints>
-                        <ColumnConstraints minWidth="100.0" prefWidth="120.0" halignment="RIGHT"/>
-                        <ColumnConstraints hgrow="ALWAYS"/>
-                    </columnConstraints>
+               <Separator prefWidth="500.0" />
 
-                    <Label text="Phone:" GridPane.columnIndex="0" GridPane.rowIndex="0" 
-                           style="-fx-font-weight: bold;"/>
-                    <Label fx:id="phoneLabel" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+               <GridPane hgap="30.0" vgap="15.0" alignment="CENTER">
+                 <columnConstraints>
+                   <ColumnConstraints halignment="RIGHT" minWidth="120.0" />
+                   <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" minWidth="200.0" />
+                 </columnConstraints>
+                 <rowConstraints>
+                   <RowConstraints />
+                   <RowConstraints />
+                   <RowConstraints />
+                   <RowConstraints />
+                   <RowConstraints />
+                 </rowConstraints>
+                  <children>
+                     <Label style="-fx-font-weight: bold; -fx-text-fill: #666666;" text="Company:" />
+                     <Label style="-fx-font-weight: bold; -fx-text-fill: #666666;" text="Phone:" GridPane.rowIndex="1" />
+                     <Label style="-fx-font-weight: bold; -fx-text-fill: #666666;" text="Email:" GridPane.rowIndex="2" />
+                     <Label style="-fx-font-weight: bold; -fx-text-fill: #666666;" text="Address:" GridPane.rowIndex="3" />
+                     <Label style="-fx-font-weight: bold; -fx-text-fill: #666666;" text="Birthday:" GridPane.rowIndex="4" />
 
-                    <Label text="Email:" GridPane.columnIndex="0" GridPane.rowIndex="1" 
-                           style="-fx-font-weight: bold;"/>
-                    <Label fx:id="emailLabel" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                     <Label fx:id="companyLabel" GridPane.columnIndex="1" />
+                     <Label fx:id="phoneLabel" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                     <Label fx:id="emailLabel" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                     <Label fx:id="addressLabel" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                     <Label fx:id="birthdayLabel" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                  </children>
+               </GridPane>
 
-                    <Label text="Address:" GridPane.columnIndex="0" GridPane.rowIndex="2" 
-                           style="-fx-font-weight: bold;"/>
-                    <Label fx:id="addressLabel" GridPane.columnIndex="1" GridPane.rowIndex="2" 
-                           wrapText="true"/>
-
-                    <Label text="Notes:" GridPane.columnIndex="0" GridPane.rowIndex="3" 
-                           style="-fx-font-weight: bold;" valignment="TOP"/>
-                    <Label fx:id="notesLabel" GridPane.columnIndex="1" GridPane.rowIndex="3" 
-                           wrapText="true"/>
-                </GridPane>
-            </VBox>
+               <VBox spacing="10.0">
+                  <VBox.margin>
+                     <Insets top="20.0" />
+                  </VBox.margin>
+                  <children>
+                     <Label style="-fx-font-weight: bold; -fx-text-fill: #666666;" text="Notes:" />
+                     <Separator prefWidth="500.0" />
+                     <Label fx:id="notesLabel" wrapText="true" maxWidth="500.0" />
+                  </children>
+               </VBox>
+            </children>
+         </VBox>
         </VBox>
     </center>
 

@@ -1,4 +1,47 @@
 package org.ContactManager;
 
-public class Main {
+import atlantafx.base.theme.CupertinoLight;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import org.lib.InstanceManager;
+
+public class Main extends Application {
+
+    /*
+    * TODO:
+    *  * 1. Make toString method in Contact class also return first letter of middle name between first and last name
+    *  2. Make it so that information is show on the right panel with a copy button next to each information
+    *  3. Add a dark mode
+    *  4. Add search functionality
+    *  5. Add all dream features from there
+    * */
+
+    private static InstanceManager im;
+
+    @Override
+    public void start(Stage stage) throws Exception {
+
+        im.setStage(stage);
+
+        Application.setUserAgentStylesheet(new CupertinoLight().getUserAgentStylesheet());
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/main.fxml"));
+
+        Scene scene = new Scene(loader.load());
+
+        stage.setScene(scene);
+        stage.setTitle("Contact Manager");
+        stage.show();
+    }
+
+    public static void main(String[] args) {
+        im = new InstanceManager();
+        if (im.isAlreadyRunning()) {
+            System.exit(0);
+        }
+        im.startListener();
+        launch(args);
+    }
 }
