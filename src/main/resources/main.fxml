@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            prefHeight="600.0" prefWidth="800.0"
+            stylesheets="@main.css">
+
+    <!-- Top Toolbar -->
+    <top>
+        <ToolBar>
+            <Button fx:id="addContactButton" text="Add Contact"/>
+            <Button fx:id="editContactButton" text="Edit Contact" disable="true"/>
+            <Button fx:id="deleteContactButton" text="Delete Contact" disable="true"/>
+        </ToolBar>
+    </top>
+
+    <!-- Left: Contact List -->
+    <left>
+        <VBox prefWidth="250.0" spacing="10.0">
+            <padding>
+                <Insets top="10.0" right="10.0" bottom="10.0" left="10.0"/>
+            </padding>
+            
+            <TextField fx:id="searchField" promptText="Search contacts..."/>
+            
+            <ListView fx:id="contactListView" VBox.vgrow="ALWAYS"/>
+        </VBox>
+    </left>
+
+    <!-- Right: Contact Details -->
+    <center>
+        <VBox spacing="15.0" alignment="TOP_LEFT">
+            <padding>
+                <Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/>
+            </padding>
+
+            <Label fx:id="noSelectionLabel" text="Select a contact to view details" 
+                   style="-fx-font-size: 16px; -fx-text-fill: gray;"/>
+
+            <VBox fx:id="contactDetailsPane" spacing="12.0" visible="false" managed="false">
+                <Label fx:id="nameLabel" style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+                
+                <Separator/>
+                
+                <GridPane hgap="10.0" vgap="12.0">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="100.0" prefWidth="120.0" halignment="RIGHT"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+
+                    <Label text="Phone:" GridPane.columnIndex="0" GridPane.rowIndex="0" 
+                           style="-fx-font-weight: bold;"/>
+                    <Label fx:id="phoneLabel" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                    <Label text="Email:" GridPane.columnIndex="0" GridPane.rowIndex="1" 
+                           style="-fx-font-weight: bold;"/>
+                    <Label fx:id="emailLabel" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                    <Label text="Address:" GridPane.columnIndex="0" GridPane.rowIndex="2" 
+                           style="-fx-font-weight: bold;"/>
+                    <Label fx:id="addressLabel" GridPane.columnIndex="1" GridPane.rowIndex="2" 
+                           wrapText="true"/>
+
+                    <Label text="Notes:" GridPane.columnIndex="0" GridPane.rowIndex="3" 
+                           style="-fx-font-weight: bold;" valignment="TOP"/>
+                    <Label fx:id="notesLabel" GridPane.columnIndex="1" GridPane.rowIndex="3" 
+                           wrapText="true"/>
+                </GridPane>
+            </VBox>
+        </VBox>
+    </center>
+
+</BorderPane>
