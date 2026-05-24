@@ -6,6 +6,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import org.lib.BuildInformation;
 import org.lib.InstanceManager;
 
 import java.util.Objects;
@@ -36,8 +37,8 @@ public class Main extends Application {
         Scene scene = new Scene(loader.load());
 
         stage.setScene(scene);
-        stage.setTitle("Contact Manager");
-        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/contact icon.jpg"))));
+        stage.setTitle("Contact Manager " + BuildInformation.get("app.version"));
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/contact icon.png"))));
         stage.show();
         window = stage;
     }

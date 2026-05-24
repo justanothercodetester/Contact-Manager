@@ -14,7 +14,7 @@
          <children>
             <ImageView fitHeight="119.0" fitWidth="150.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="@contact icon.jpg" />
+                  <Image url="@contact icon.png" />
                </image>
                <HBox.margin>
                   <Insets right="90.0" />

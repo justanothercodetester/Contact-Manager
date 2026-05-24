@@ -255,7 +255,7 @@ public void copyNotes(ActionEvent event) {
         Stage stage = new Stage();
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.setTitle("About " + BuildInformation.get("app.name"));
-        stage.getIcons().add(new Image(Objects.requireNonNull(Main.class.getResourceAsStream("/contact icon.jpg"))));
+        stage.getIcons().add(new Image(Objects.requireNonNull(Main.class.getResourceAsStream("/contact icon.png"))));
         FXMLLoader loader = new FXMLLoader(Main.class.getResource("/about.fxml"));
 
         try {
