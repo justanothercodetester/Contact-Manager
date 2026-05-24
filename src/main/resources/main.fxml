@@ -4,13 +4,18 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.RadioMenuItem?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Font?>
@@ -19,11 +24,47 @@
 
     <!-- Top Toolbar -->
     <top>
-        <ToolBar>
-            <Button onAction="#addContactButton" text="Add Contact" />
-            <Button fx:id="editContactButton" disable="true" onAction="#editContactButton" text="Edit Contact" />
-            <Button fx:id="deleteContactButton" disable="true" onAction="#deleteContactButton" text="Delete Contact" />
-        </ToolBar>
+      <VBox>
+         <children>
+            <MenuBar>
+              <menus>
+                <Menu mnemonicParsing="false" text="File">
+                  <items>
+                        <MenuItem mnemonicParsing="false" text="New contact database" />
+                        <MenuItem mnemonicParsing="false" text="Open contact database" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem mnemonicParsing="false" text="Save contact database" />
+                        <MenuItem mnemonicParsing="false" text="Save contact database as..." />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                    <MenuItem mnemonicParsing="false" onAction="#close" text="Close" />
+                  </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Edit">
+                     <items>
+                        <MenuItem mnemonicParsing="false" onAction="#addContactButton" text="Add contact" />
+                        <MenuItem fx:id="editContactMenu" disable="true" mnemonicParsing="false" onAction="#editContactButton" text="Edit contact" />
+                        <MenuItem fx:id="deleteContactMenu" disable="true" mnemonicParsing="false" onAction="#deleteContactButton" text="Remove contact" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem mnemonicParsing="false" text="Import contact" />
+                        <MenuItem mnemonicParsing="false" text="Export contact" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <RadioMenuItem mnemonicParsing="false" onAction="#darkMode" text="Dark mode" />
+                     </items>
+                </Menu>
+                <Menu mnemonicParsing="false" text="Help">
+                  <items>
+                    <MenuItem mnemonicParsing="false" text="About" />
+                  </items>
+                </Menu>
+              </menus>
+            </MenuBar>
+              <ToolBar>
+                  <Button onAction="#addContactButton" text="+" />
+                  <Button fx:id="editContactButton" disable="true" onAction="#editContactButton" text="📝" />
+                  <Button fx:id="deleteContactButton" disable="true" onAction="#deleteContactButton" text="🗑" />
+              </ToolBar>
+         </children>
+      </VBox>
     </top>
 
     <!-- Left: Contact List -->
@@ -57,10 +98,11 @@
 
                <Separator prefWidth="500.0" />
 
-               <GridPane hgap="30.0" vgap="15.0" alignment="CENTER">
+               <GridPane alignment="CENTER" hgap="30.0" vgap="15.0">
                  <columnConstraints>
                    <ColumnConstraints halignment="RIGHT" minWidth="120.0" />
                    <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" minWidth="200.0" />
+                   <ColumnConstraints halignment="LEFT" minWidth="80.0" />
                  </columnConstraints>
                  <rowConstraints>
                    <RowConstraints />
@@ -81,6 +123,12 @@
                      <Label fx:id="emailLabel" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                      <Label fx:id="addressLabel" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
                      <Label fx:id="birthdayLabel" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+                     <Button onAction="#copyCompany" text="Copy" GridPane.columnIndex="2" />
+                     <Button onAction="#copyPhone" text="Copy" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                     <Button onAction="#copyEmail" text="Copy" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                     <Button onAction="#copyAddress" text="Copy" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                     <Button onAction="#copyBirthday" text="Copy" GridPane.columnIndex="2" GridPane.rowIndex="4" />
                   </children>
                </GridPane>
 
@@ -91,7 +139,12 @@
                   <children>
                      <Label style="-fx-font-weight: bold; -fx-text-fill: #666666;" text="Notes:" />
                      <Separator prefWidth="500.0" />
-                     <Label fx:id="notesLabel" wrapText="true" maxWidth="500.0" />
+                     <ScrollPane fitToWidth="true" maxHeight="150.0" maxWidth="500.0" prefHeight="100.0">
+                        <content>
+                           <Label fx:id="notesLabel" maxWidth="480.0" wrapText="true" />
+                        </content>
+                     </ScrollPane>
+                     <Button onAction="#copyNotes" text="Copy Notes" />
                   </children>
                </VBox>
             </children>

@@ -6,7 +6,7 @@
 
     <groupId>org</groupId>
     <artifactId>ContactManager</artifactId>
-    <version>0.0.1b</version>
+    <version>0.1.2a</version>
 
     <properties>
         <maven.compiler.source>21</maven.compiler.source>

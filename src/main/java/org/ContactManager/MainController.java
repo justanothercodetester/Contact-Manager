@@ -1,11 +1,25 @@
 package org.ContactManager;
 
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.util.Optional;
 
+import atlantafx.base.theme.CupertinoDark;
+import atlantafx.base.theme.CupertinoLight;
+import javafx.animation.PauseTransition;
+import javafx.application.Application;
+import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 import org.lib.Contact;
 
 public class MainController {
@@ -26,7 +40,9 @@ public class MainController {
     //End of right pane stuff
 
     public Button editContactButton;
+    public MenuItem editContactMenu;
     public Button deleteContactButton;
+    public MenuItem deleteContactMenu;
 
     @FXML
     private TextField searchField;
@@ -83,7 +99,9 @@ public class MainController {
 
     public void listFocused() {
         editContactButton.setDisable(false);
+        editContactMenu.setDisable(false);
         deleteContactButton.setDisable(false);
+        deleteContactMenu.setDisable(false);
         noSelectionLabel.setVisible(false);
         contactDetailsPane.setVisible(true);
 
@@ -100,10 +118,115 @@ public class MainController {
 
     public void listUnfocused(){
         editContactButton.setDisable(true);
+        editContactMenu.setDisable(true);
         deleteContactButton.setDisable(true);
+        deleteContactMenu.setDisable(true);
     }
 
     public Contact getFocusedContact() {
         return contactListView.getSelectionModel().getSelectedItem();
     }
+
+    public void copyCompany(ActionEvent event) {
+        copyToClipboard(companyLabel.getText());
+        Button source = (Button) event.getSource();
+        source.setDisable(true);
+        source.setText("Copied...");
+
+        PauseTransition pause = new PauseTransition(Duration.millis(1500));
+        pause.setOnFinished(e -> {
+            source.setText("Copy");
+            source.setDisable(false);
+        });
+        pause.play();
+    }
+
+    public void copyPhone(ActionEvent event) {
+        copyToClipboard(phoneLabel.getText());
+        Button source = (Button) event.getSource();
+        source.setDisable(true);
+        source.setText("Copied...");
+
+        PauseTransition pause = new PauseTransition(Duration.millis(1500));
+        pause.setOnFinished(e -> {
+            source.setText("Copy");
+            source.setDisable(false);
+        });
+        pause.play();
+    }
+
+    public void copyEmail(ActionEvent event) {
+        copyToClipboard(emailLabel.getText());
+        Button source = (Button) event.getSource();
+        source.setDisable(true);
+        source.setText("Copied...");
+
+        PauseTransition pause = new PauseTransition(Duration.millis(1500));
+        pause.setOnFinished(e -> {
+            source.setText("Copy");
+            source.setDisable(false);
+        });
+        pause.play();
+    }
+
+    public void copyAddress(ActionEvent event) {
+        copyToClipboard(addressLabel.getText());
+        Button source = (Button) event.getSource();
+        source.setDisable(true);
+        source.setText("Copied...");
+
+        PauseTransition pause = new PauseTransition(Duration.millis(1500));
+        pause.setOnFinished(e -> {
+            source.setText("Copy");
+            source.setDisable(false);
+        });
+        pause.play();
+    }
+
+    public void copyBirthday(ActionEvent event) {
+        copyToClipboard(birthdayLabel.getText());
+        Button source = (Button) event.getSource();
+        source.setDisable(true);
+        source.setText("Copied...");
+
+        PauseTransition pause = new PauseTransition(Duration.millis(1500));
+        pause.setOnFinished(e -> {
+            source.setText("Copy");
+            source.setDisable(false);
+        });
+        pause.play();
+    }
+
+    public void copyNotes(ActionEvent event) {
+        copyToClipboard(notesLabel.getText());
+        Button source = (Button) event.getSource();
+        source.setDisable(true);
+        source.setText("Copied...");
+
+        PauseTransition pause = new PauseTransition(Duration.millis(1500));
+        pause.setOnFinished(e -> {
+            source.setText("Copy");
+            source.setDisable(false);
+        });
+        pause.play();
+    }
+
+    public static void copyToClipboard(String text) {
+        Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
+        StringSelection data = new StringSelection(text);
+        cb.setContents(data, null);
+    }
+
+    public void darkMode(ActionEvent event) {
+        RadioMenuItem source = (RadioMenuItem) event.getSource();
+        if (source.isSelected())
+            Application.setUserAgentStylesheet(new CupertinoDark().getUserAgentStylesheet());
+        else
+            Application.setUserAgentStylesheet(new CupertinoLight().getUserAgentStylesheet());
+    }
+
+    public void close() {
+        Main.window.close();
+    }
+
 }

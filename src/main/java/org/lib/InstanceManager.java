@@ -61,7 +61,7 @@ public class InstanceManager {
                         BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
                         String message = in.readLine();
                         if (message.equals("SHOW")) {
-                            System.out.println("Another instance was run. Focusing windows now.");
+                            System.out.println("Another instance was run. Focusing window now.");
                             Platform.runLater(() -> {
                                 stage.toFront();
                                 stage.requestFocus();
