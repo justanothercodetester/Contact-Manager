@@ -1,7 +1,5 @@
 package org.lib;
 
-import org.lib.Date;
-
 public class Contact {
 
     public String firstName;

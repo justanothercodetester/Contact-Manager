@@ -3,6 +3,8 @@ package org.ContactManager;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.io.IOException;
+import java.util.Objects;
 import java.util.Optional;
 
 import atlantafx.base.theme.CupertinoDark;
@@ -12,14 +14,20 @@ import javafx.application.Application;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.lib.BuildInformation;
 import org.lib.Contact;
 
 public class MainController {
@@ -128,7 +136,9 @@ public class MainController {
     }
 
     public void copyCompany(ActionEvent event) {
-        copyToClipboard(companyLabel.getText());
+    copyToClipboard(companyLabel.getText());
+    
+    if (event.getSource() instanceof Button) {
         Button source = (Button) event.getSource();
         source.setDisable(true);
         source.setText("Copied...");
@@ -140,9 +150,12 @@ public class MainController {
         });
         pause.play();
     }
+}
 
-    public void copyPhone(ActionEvent event) {
-        copyToClipboard(phoneLabel.getText());
+public void copyPhone(ActionEvent event) {
+    copyToClipboard(phoneLabel.getText());
+    
+    if (event.getSource() instanceof Button) {
         Button source = (Button) event.getSource();
         source.setDisable(true);
         source.setText("Copied...");
@@ -154,9 +167,12 @@ public class MainController {
         });
         pause.play();
     }
+}
 
-    public void copyEmail(ActionEvent event) {
-        copyToClipboard(emailLabel.getText());
+public void copyEmail(ActionEvent event) {
+    copyToClipboard(emailLabel.getText());
+    
+    if (event.getSource() instanceof Button) {
         Button source = (Button) event.getSource();
         source.setDisable(true);
         source.setText("Copied...");
@@ -168,9 +184,12 @@ public class MainController {
         });
         pause.play();
     }
+}
 
-    public void copyAddress(ActionEvent event) {
-        copyToClipboard(addressLabel.getText());
+public void copyAddress(ActionEvent event) {
+    copyToClipboard(addressLabel.getText());
+    
+    if (event.getSource() instanceof Button) {
         Button source = (Button) event.getSource();
         source.setDisable(true);
         source.setText("Copied...");
@@ -182,9 +201,12 @@ public class MainController {
         });
         pause.play();
     }
+}
 
-    public void copyBirthday(ActionEvent event) {
-        copyToClipboard(birthdayLabel.getText());
+public void copyBirthday(ActionEvent event) {
+    copyToClipboard(birthdayLabel.getText());
+    
+    if (event.getSource() instanceof Button) {
         Button source = (Button) event.getSource();
         source.setDisable(true);
         source.setText("Copied...");
@@ -196,9 +218,12 @@ public class MainController {
         });
         pause.play();
     }
+}
 
-    public void copyNotes(ActionEvent event) {
-        copyToClipboard(notesLabel.getText());
+public void copyNotes(ActionEvent event) {
+    copyToClipboard(notesLabel.getText());
+    
+    if (event.getSource() instanceof Button) {
         Button source = (Button) event.getSource();
         source.setDisable(true);
         source.setText("Copied...");
@@ -210,6 +235,7 @@ public class MainController {
         });
         pause.play();
     }
+}
 
     public static void copyToClipboard(String text) {
         Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -223,6 +249,27 @@ public class MainController {
             Application.setUserAgentStylesheet(new CupertinoDark().getUserAgentStylesheet());
         else
             Application.setUserAgentStylesheet(new CupertinoLight().getUserAgentStylesheet());
+    }
+
+    public void showInfo() {
+        Stage stage = new Stage();
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.setTitle("About " + BuildInformation.get("app.name"));
+        stage.getIcons().add(new Image(Objects.requireNonNull(Main.class.getResourceAsStream("/contact icon.jpg"))));
+        FXMLLoader loader = new FXMLLoader(Main.class.getResource("/about.fxml"));
+
+        try {
+            Scene scene = new Scene(loader.load());
+            stage.setScene(scene);
+            stage.showAndWait();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("FXML Load Error");
+            alert.setHeaderText("Unable to load about.fxml");
+            alert.setContentText(ex.getMessage());
+            alert.showAndWait();
+        }
     }
 
     public void close() {

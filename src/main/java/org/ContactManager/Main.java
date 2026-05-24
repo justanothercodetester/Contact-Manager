@@ -4,8 +4,11 @@ import atlantafx.base.theme.CupertinoLight;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.lib.InstanceManager;
+
+import java.util.Objects;
 
 public class Main extends Application {
 
@@ -34,6 +37,7 @@ public class Main extends Application {
 
         stage.setScene(scene);
         stage.setTitle("Contact Manager");
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/contact icon.jpg"))));
         stage.show();
         window = stage;
     }
