@@ -136,9 +136,7 @@ public class MainController {
     }
 
     public void copyCompany(ActionEvent event) {
-    copyToClipboard(companyLabel.getText());
-    
-    if (event.getSource() instanceof Button) {
+        copyToClipboard(companyLabel.getText());
         Button source = (Button) event.getSource();
         source.setDisable(true);
         source.setText("Copied...");
@@ -150,12 +148,9 @@ public class MainController {
         });
         pause.play();
     }
-}
 
-public void copyPhone(ActionEvent event) {
-    copyToClipboard(phoneLabel.getText());
-    
-    if (event.getSource() instanceof Button) {
+    public void copyPhone(ActionEvent event) {
+        copyToClipboard(phoneLabel.getText());
         Button source = (Button) event.getSource();
         source.setDisable(true);
         source.setText("Copied...");
@@ -167,12 +162,9 @@ public void copyPhone(ActionEvent event) {
         });
         pause.play();
     }
-}
 
-public void copyEmail(ActionEvent event) {
-    copyToClipboard(emailLabel.getText());
-    
-    if (event.getSource() instanceof Button) {
+    public void copyEmail(ActionEvent event) {
+        copyToClipboard(emailLabel.getText());
         Button source = (Button) event.getSource();
         source.setDisable(true);
         source.setText("Copied...");
@@ -184,12 +176,9 @@ public void copyEmail(ActionEvent event) {
         });
         pause.play();
     }
-}
 
-public void copyAddress(ActionEvent event) {
-    copyToClipboard(addressLabel.getText());
-    
-    if (event.getSource() instanceof Button) {
+    public void copyAddress(ActionEvent event) {
+        copyToClipboard(addressLabel.getText());
         Button source = (Button) event.getSource();
         source.setDisable(true);
         source.setText("Copied...");
@@ -201,12 +190,9 @@ public void copyAddress(ActionEvent event) {
         });
         pause.play();
     }
-}
 
-public void copyBirthday(ActionEvent event) {
-    copyToClipboard(birthdayLabel.getText());
-    
-    if (event.getSource() instanceof Button) {
+    public void copyBirthday(ActionEvent event) {
+        copyToClipboard(birthdayLabel.getText());
         Button source = (Button) event.getSource();
         source.setDisable(true);
         source.setText("Copied...");
@@ -218,12 +204,9 @@ public void copyBirthday(ActionEvent event) {
         });
         pause.play();
     }
-}
 
-public void copyNotes(ActionEvent event) {
-    copyToClipboard(notesLabel.getText());
-    
-    if (event.getSource() instanceof Button) {
+    public void copyNotes(ActionEvent event) {
+        copyToClipboard(notesLabel.getText());
         Button source = (Button) event.getSource();
         source.setDisable(true);
         source.setText("Copied...");
@@ -235,7 +218,6 @@ public void copyNotes(ActionEvent event) {
         });
         pause.play();
     }
-}
 
     public static void copyToClipboard(String text) {
         Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
