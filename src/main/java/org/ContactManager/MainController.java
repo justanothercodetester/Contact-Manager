@@ -6,6 +6,7 @@ import java.awt.datatransfer.StringSelection;
 import java.io.*;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import atlantafx.base.theme.CupertinoDark;
 import atlantafx.base.theme.CupertinoLight;
@@ -126,30 +127,47 @@ public class MainController {
             return;
 
         if (result.get() == ButtonType.YES) {
+            AtomicBoolean isCancelled = new AtomicBoolean(false);
+
             Stage stage = new Stage();
 
             VBox root = new VBox();
 
             Label instructions = new Label("Enter a password:");
-            PasswordField field = new PasswordField();
-            field.setPromptText("abc123");
-            field.setOnAction(e -> stage.close());
+            PasswordField passwordField = new PasswordField();
+            passwordField.setPromptText("abc123");
+            Label instructions2 = new Label("Confirm password:");
+            PasswordField confirmField = new PasswordField();
+            confirmField.setPromptText("Enter password again");
             Button confirm = new Button("Submit password");
-            confirm.setOnAction(e -> stage.close());
+            confirm.setOnAction(e -> {
+                if (checkPassword(passwordField, confirmField))
+                    stage.close();
+            });
+            confirmField.setOnAction(e -> {
+                if (checkPassword(passwordField, confirmField))
+                    stage.close();
+            });
 
-            root.getChildren().addAll(instructions, field, confirm);
+            root.getChildren().addAll(instructions, passwordField, instructions2, confirmField, confirm);
             root.setSpacing(5);
             root.setAlignment(Pos.CENTER);
 
-            Scene scene = new Scene(root, 300, 100);
+            Scene scene = new Scene(root, 300, 200);
 
             stage.setScene(scene);
             stage.setResizable(false);
             stage.setTitle("Password");
-            stage.setOnCloseRequest(e -> field.setText(""));
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setOnCloseRequest(e -> {
+                isCancelled.set(true);
+            });
             stage.showAndWait();
 
-            password = field.getText();
+            if (isCancelled.get())
+                return;
+
+            password = passwordField.getText();
         }
 
         Contact c = getFocusedContact();
@@ -181,10 +199,23 @@ public class MainController {
         try (FileWriter writer = new FileWriter(file)) {
             writer.write(content);
         } catch (FileNotFoundException e) {
-            System.out.println("Couldn't locate file");
+            showError("Unable to locate file", "Error locating file, please try again later.");
         } catch (IOException e) {
-            System.out.println("Unable to write to file");
+            showError("Error writing to file", "Error writing to file.\n" + e.getMessage());
         }
+    }
+
+    public boolean checkPassword(PasswordField passwordField, PasswordField confirmField) {
+        if (passwordField.getText().equals(confirmField.getText()))
+            return true;
+
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Passwords do not match");
+        alert.setHeaderText("");
+        alert.setContentText("The passwords you entered do not match.");
+        alert.show();
+
+        return false;
     }
 
     public void importContact() {
@@ -211,15 +242,17 @@ public class MainController {
             content = builder.toString();
 
         } catch (FileNotFoundException e) {
-            System.out.println("File not found");
+            showError("File not found", "File not found. Please try again later.");
         } catch (IOException e) {
-            System.out.println("Unable to read file");
+            showError("Error reading file", "Error reading file.\n" + e.getMessage());
         }
 
         if (content.isEmpty())
             return;
 
         if (!content.contains(":")) {
+            AtomicBoolean isCancelled = new AtomicBoolean(false);
+
             requiresPassword = true;
 
             Stage stage = new Stage();
@@ -242,7 +275,14 @@ public class MainController {
             stage.setScene(scene);
             stage.setResizable(false);
             stage.setTitle("Password Required");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setOnCloseRequest(e -> {
+                isCancelled.set(true);
+            });
             stage.showAndWait();
+
+            if (isCancelled.get())
+                return;
 
             password = field.getText();
         }
@@ -417,4 +457,11 @@ public class MainController {
         Main.window.close();
     }
 
+    public void showError(String title, String text) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle(title);
+        alert.setHeaderText("");
+        alert.setContentText(text);
+        alert.showAndWait();
+    }
 }
