@@ -7,6 +7,7 @@ module org.ContactManager {
     requires javafx.fxml;
     requires javafx.graphics;
     requires com.github.kwhat.jnativehook;
+    requires org.json;
 
     exports org.ContactManager;
     opens org.ContactManager to javafx.fxml;

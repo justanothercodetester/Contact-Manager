@@ -3,7 +3,7 @@ package org.ContactManager;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.io.IOException;
+import java.io.*;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -11,10 +11,10 @@ import atlantafx.base.theme.CupertinoDark;
 import atlantafx.base.theme.CupertinoLight;
 import javafx.animation.PauseTransition;
 import javafx.application.Application;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
@@ -24,9 +24,12 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.json.JSONObject;
+import org.lib.AES;
 import org.lib.BuildInformation;
 import org.lib.Contact;
 
@@ -51,6 +54,8 @@ public class MainController {
     public MenuItem editContactMenu;
     public Button deleteContactButton;
     public MenuItem deleteContactMenu;
+
+    public MenuItem exportContactMenuItem;
 
     @FXML
     private TextField searchField;
@@ -105,11 +110,174 @@ public class MainController {
         }
     }
 
+    public void exportContact() {
+
+        String password = "";
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setHeaderText("");
+        alert.setTitle("Encryption");
+        alert.setContentText("Would you like to turn on password protection for this contact?\n" +
+                "Only use this if the contact you are exporting contains sensitive data");
+        alert.getButtonTypes().set(0, ButtonType.YES);
+        alert.getButtonTypes().add(ButtonType.NO);
+        Optional<ButtonType> result = alert.showAndWait();
+        if (!result.isPresent() || result.get() == ButtonType.CANCEL)
+            return;
+
+        if (result.get() == ButtonType.YES) {
+            Stage stage = new Stage();
+
+            VBox root = new VBox();
+
+            Label instructions = new Label("Enter a password:");
+            PasswordField field = new PasswordField();
+            field.setPromptText("abc123");
+            field.setOnAction(e -> stage.close());
+            Button confirm = new Button("Submit password");
+            confirm.setOnAction(e -> stage.close());
+
+            root.getChildren().addAll(instructions, field, confirm);
+            root.setSpacing(5);
+            root.setAlignment(Pos.CENTER);
+
+            Scene scene = new Scene(root, 300, 100);
+
+            stage.setScene(scene);
+            stage.setResizable(false);
+            stage.setTitle("Password");
+            stage.setOnCloseRequest(e -> field.setText(""));
+            stage.showAndWait();
+
+            password = field.getText();
+        }
+
+        Contact c = getFocusedContact();
+
+        JSONObject contact = new JSONObject();
+        contact.put("First Name", c.firstName);
+        contact.put("Middle Name", c.middleName);
+        contact.put("Last Name", c.lastName);
+        contact.put("Company", c.company);
+        contact.put("Phone", c.getPhone());
+        contact.put("Email", c.getEmail());
+        contact.put("Address", c.getAddress());
+        contact.put("Birthday", c.getBirthday());
+        contact.put("Notes", c.notes);
+
+        String content = contact.toString();
+
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Export Contact");
+        chooser.setInitialFileName("example");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Contact File", "*.JContact"));
+        File file = chooser.showSaveDialog(Main.window);
+        if (file == null)
+            return;
+
+        if (!password.isEmpty())
+            content = AES.encrypt(content, password);
+
+        try (FileWriter writer = new FileWriter(file)) {
+            writer.write(content);
+        } catch (FileNotFoundException e) {
+            System.out.println("Couldn't locate file");
+        } catch (IOException e) {
+            System.out.println("Unable to write to file");
+        }
+    }
+
+    public void importContact() {
+        String content = "";
+        String password = "";
+        boolean requiresPassword = false;
+
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Export Contact");
+        chooser.setInitialFileName("example");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Contact File", "*.JContact"));
+        File file = chooser.showOpenDialog(Main.window);
+        if (file == null)
+            return;
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            StringBuilder builder = new StringBuilder();
+
+            String str;
+
+            while ((str = reader.readLine()) != null)
+                builder.append(str).append("\n");
+
+            content = builder.toString();
+
+        } catch (FileNotFoundException e) {
+            System.out.println("File not found");
+        } catch (IOException e) {
+            System.out.println("Unable to read file");
+        }
+
+        if (content.isEmpty())
+            return;
+
+        if (!content.contains(":")) {
+            requiresPassword = true;
+
+            Stage stage = new Stage();
+
+            VBox root = new VBox();
+
+            Label instructions = new Label("Please enter a password:");
+            PasswordField field = new PasswordField();
+            field.setPromptText("abc123");
+            field.setOnAction(e -> stage.close());
+            Button confirm = new Button("Submit password");
+            confirm.setOnAction(e -> stage.close());
+
+            root.getChildren().addAll(instructions, field, confirm);
+            root.setSpacing(5);
+            root.setAlignment(Pos.CENTER);
+
+            Scene scene = new Scene(root, 300, 100);
+
+            stage.setScene(scene);
+            stage.setResizable(false);
+            stage.setTitle("Password Required");
+            stage.showAndWait();
+
+            password = field.getText();
+        }
+
+        if (requiresPassword)
+            content = AES.decrypt(content, password);
+
+        if (content.startsWith("Error")) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Wrong password");
+            alert.setHeaderText("");
+            alert.setContentText("The password provided was wrong. Please try again later");
+            alert.show();
+            return;
+        }
+
+        JSONObject object = new JSONObject(content);
+
+        Contact c = new Contact((String) object.get("First Name"), (String) object.get("Middle Name"), (String) object.get("Last Name"), (String) object.get("Company"));
+        c.setPhone((String) object.get("Phone"));
+        c.setEmail((String) object.get("Email"));
+        c.setAddress((String) object.get("Address"));
+        c.setBirthday((String) object.get("Birthday"));
+        c.notes = (String) object.get("Notes");
+
+        contactListView.getItems().add(c);
+        //contactListView.refresh();
+    }
+
     public void listFocused() {
         editContactButton.setDisable(false);
         editContactMenu.setDisable(false);
         deleteContactButton.setDisable(false);
         deleteContactMenu.setDisable(false);
+        exportContactMenuItem.setDisable(false);
         noSelectionLabel.setVisible(false);
         contactDetailsPane.setVisible(true);
 
@@ -129,6 +297,7 @@ public class MainController {
         editContactMenu.setDisable(true);
         deleteContactButton.setDisable(true);
         deleteContactMenu.setDisable(true);
+        exportContactMenuItem.setDisable(true);
     }
 
     public Contact getFocusedContact() {
@@ -152,13 +321,11 @@ public class MainController {
     public void copyPhone(ActionEvent event) {
         copyToClipboard(phoneLabel.getText());
         Button source = (Button) event.getSource();
-        source.setDisable(true);
         source.setText("Copied...");
 
         PauseTransition pause = new PauseTransition(Duration.millis(1500));
         pause.setOnFinished(e -> {
             source.setText("Copy");
-            source.setDisable(false);
         });
         pause.play();
     }
@@ -166,13 +333,11 @@ public class MainController {
     public void copyEmail(ActionEvent event) {
         copyToClipboard(emailLabel.getText());
         Button source = (Button) event.getSource();
-        source.setDisable(true);
         source.setText("Copied...");
 
         PauseTransition pause = new PauseTransition(Duration.millis(1500));
         pause.setOnFinished(e -> {
             source.setText("Copy");
-            source.setDisable(false);
         });
         pause.play();
     }
@@ -180,13 +345,11 @@ public class MainController {
     public void copyAddress(ActionEvent event) {
         copyToClipboard(addressLabel.getText());
         Button source = (Button) event.getSource();
-        source.setDisable(true);
         source.setText("Copied...");
 
         PauseTransition pause = new PauseTransition(Duration.millis(1500));
         pause.setOnFinished(e -> {
             source.setText("Copy");
-            source.setDisable(false);
         });
         pause.play();
     }
@@ -194,13 +357,11 @@ public class MainController {
     public void copyBirthday(ActionEvent event) {
         copyToClipboard(birthdayLabel.getText());
         Button source = (Button) event.getSource();
-        source.setDisable(true);
         source.setText("Copied...");
 
         PauseTransition pause = new PauseTransition(Duration.millis(1500));
         pause.setOnFinished(e -> {
             source.setText("Copy");
-            source.setDisable(false);
         });
         pause.play();
     }
@@ -208,13 +369,11 @@ public class MainController {
     public void copyNotes(ActionEvent event) {
         copyToClipboard(notesLabel.getText());
         Button source = (Button) event.getSource();
-        source.setDisable(true);
         source.setText("Copied...");
 
         PauseTransition pause = new PauseTransition(Duration.millis(1500));
         pause.setOnFinished(e -> {
             source.setText("Copy");
-            source.setDisable(false);
         });
         pause.play();
     }

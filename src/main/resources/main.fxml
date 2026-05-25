@@ -45,8 +45,8 @@
                         <MenuItem fx:id="editContactMenu" disable="true" mnemonicParsing="false" onAction="#editContactButton" text="Edit contact" />
                         <MenuItem fx:id="deleteContactMenu" disable="true" mnemonicParsing="false" onAction="#deleteContactButton" text="Remove contact" />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem mnemonicParsing="false" text="Import contact" />
-                        <MenuItem mnemonicParsing="false" text="Export contact" />
+                        <MenuItem mnemonicParsing="false" text="Import contact" onAction="#importContact" />
+                        <MenuItem fx:id="exportContactMenuItem" mnemonicParsing="false" text="Export contact" disable="true" onAction="#exportContact" />
                         <SeparatorMenuItem mnemonicParsing="false" />
                         <RadioMenuItem mnemonicParsing="false" onAction="#darkMode" text="Dark mode" />
                      </items>
