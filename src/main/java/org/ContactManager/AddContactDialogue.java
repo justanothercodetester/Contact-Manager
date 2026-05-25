@@ -15,11 +15,13 @@ import org.lib.Contact;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class AddContactDialogue {
 
-    public static void add(ListView<Contact> contactListView) {
+    public static void add(ListView<Contact> contactListView, ArrayList<Contact> contacts) {
         Stage stage = new Stage();
 
         VBox root = new VBox();
@@ -219,6 +221,7 @@ public class AddContactDialogue {
             contact.notes = notesTextArea.getText();
 
             contactListView.getItems().add(contact);
+            contacts.add(contact);
 
             stage.close();
         });

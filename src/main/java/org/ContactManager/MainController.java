@@ -4,6 +4,7 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -63,11 +64,16 @@ public class MainController {
 
     @FXML
     private ListView<Contact> contactListView;
+
+    private ArrayList<Contact> contacts;
+
     @FXML
     private BorderPane root;
 
     @FXML
     public void initialize() {
+        contacts = new ArrayList<>();
+
         // Add listener for when an item is selected/focused
         contactListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
@@ -82,10 +88,17 @@ public class MainController {
                 listUnfocused();
             }
         });
+
+        searchField.setOnKeyTyped(keyEvent -> {
+            contactListView.getItems().clear();
+            for (Contact c : contacts)
+                if (c.toString().contains(searchField.getText()))
+                    contactListView.getItems().add(c);
+        });
     }
 
     public void addContactButton() {
-        AddContactDialogue.add(contactListView);
+        AddContactDialogue.add(contactListView, contacts);
     }
 
     public void editContactButton() {
@@ -95,6 +108,8 @@ public class MainController {
     }
 
     public void deleteContactButton() {
+        Contact c = getFocusedContact();
+
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setHeaderText(null);
         alert.setContentText("Are you sure you wish to delete " + getFocusedContact() + "'s contact?");
@@ -104,9 +119,11 @@ public class MainController {
         Optional<ButtonType> result = alert.showAndWait();
 
         if (result.isPresent() && result.get() == ButtonType.YES){
-            contactListView.getItems().remove(getFocusedContact());
+            contactListView.getItems().remove(c);
+            contacts.remove(c);
             noSelectionLabel.setVisible(true);
             contactDetailsPane.setVisible(false);
+            contactListView.getSelectionModel().clearSelection();
             listUnfocused();
         }
     }
@@ -309,7 +326,7 @@ public class MainController {
         c.notes = (String) object.get("Notes");
 
         contactListView.getItems().add(c);
-        //contactListView.refresh();
+        contacts.add(c);
     }
 
     public void listFocused() {

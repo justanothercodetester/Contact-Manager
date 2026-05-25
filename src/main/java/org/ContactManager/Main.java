@@ -18,7 +18,7 @@ public class Main extends Application {
     *  * 1. Make toString method in Contact class also return first letter of middle name between first and last name
     *  * 2. Make it so that information is show on the right panel with a copy button next to each information
     *  * 3. Add a dark mode
-    *  4. Add search functionality
+    *  * 4. Add search functionality
     *  5. Add all dream features from there
     * */
 
