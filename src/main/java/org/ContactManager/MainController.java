@@ -30,12 +30,20 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.lib.AES;
 import org.lib.BuildInformation;
 import org.lib.Contact;
 
 public class MainController {
+
+    private final String DocumentsFolder = System.getProperty("user.home") + "/Documents";
+
+    public File currentDatabase;
+
+    private boolean hasChanged = false;
+
     //Right pane stuff
     public Label nameLabel;
     public Label companyLabel;
@@ -92,19 +100,25 @@ public class MainController {
         searchField.setOnKeyTyped(keyEvent -> {
             contactListView.getItems().clear();
             for (Contact c : contacts)
-                if (c.toString().contains(searchField.getText()))
+                if (c.toString().toLowerCase().contains(searchField.getText().toLowerCase()))
                     contactListView.getItems().add(c);
         });
     }
 
     public void addContactButton() {
-        AddContactDialogue.add(contactListView, contacts);
+        boolean hasChanged = AddContactDialogue.add(contactListView, contacts);
+        if (hasChanged)
+            this.hasChanged = true;
     }
 
     public void editContactButton() {
-        AddContactDialogue.edit(getFocusedContact());
+        boolean hasChanged = AddContactDialogue.edit(getFocusedContact());
         listFocused();
         contactListView.refresh();
+
+        if (hasChanged)
+            this.hasChanged = true;
+
     }
 
     public void deleteContactButton() {
@@ -125,22 +139,190 @@ public class MainController {
             contactDetailsPane.setVisible(false);
             contactListView.getSelectionModel().clearSelection();
             listUnfocused();
+
+            hasChanged = true;
         }
     }
 
-    public void exportContact() {
+    public void newDB() {
+        if (hasChanged && !contacts.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Save database");
+            alert.setHeaderText("");
+            alert.setContentText("Some changes have been made. Would you like to save your contacts?");
+            alert.getButtonTypes().clear();
+            alert.getButtonTypes().addAll(ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
+            Optional<ButtonType> result = alert.showAndWait();
+
+            if (result.isEmpty() || result.get() == ButtonType.CANCEL)
+                return;
+
+            if (result.get() == ButtonType.YES)
+                saveDB();
+        }
+
+        contactListView.getItems().clear();
+        contacts.clear();
+        currentDatabase = null;
+        hasChanged = false;
+    }
+
+    public void openDB() {
+
+        if (hasChanged && !contacts.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Save database");
+            alert.setHeaderText("");
+            alert.setContentText("Some changes have been made. Would you like to save your contacts?");
+            alert.getButtonTypes().clear();
+            alert.getButtonTypes().addAll(ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
+            Optional<ButtonType> result = alert.showAndWait();
+
+            if (result.isEmpty() || result.get() == ButtonType.CANCEL)
+                return;
+
+            if (result.get() == ButtonType.YES) {
+                saveDB();
+                hasChanged = false;
+            }
+        }
 
         String password = "";
+        boolean requiresPassword = false;
+
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Open Contact Database");
+        chooser.setInitialDirectory(new File(DocumentsFolder));
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Contact Database", "*.cdb"));
+        File file = chooser.showOpenDialog(Main.window);
+
+        if (file == null)
+            return;
+
+        currentDatabase = file;
+        hasChanged = false;
+
+        StringBuilder sb = new StringBuilder();
+        String line;
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            while ((line = reader.readLine()) != null)
+                sb.append(line).append("\n");
+        } catch (IOException ex) {
+            showError("Error reading file", "Error reading file:\n" + ex.getMessage());
+        }
+
+        String content = sb.toString();
+
+        if (!content.contains(":")) {
+            AtomicBoolean isCancelled = new AtomicBoolean(false);
+
+            requiresPassword = true;
+
+            Stage stage = new Stage();
+
+            VBox root = new VBox();
+
+            Label instructions = new Label("Please enter a password:");
+            PasswordField field = new PasswordField();
+            field.setPromptText("abc123");
+            field.setOnAction(e -> stage.close());
+            Button confirm = new Button("Submit password");
+            confirm.setOnAction(e -> stage.close());
+
+            root.getChildren().addAll(instructions, field, confirm);
+            root.setSpacing(5);
+            root.setAlignment(Pos.CENTER);
+
+            Scene scene = new Scene(root, 300, 100);
+
+            stage.setScene(scene);
+            stage.setResizable(false);
+            stage.setTitle("Password Required");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setOnCloseRequest(e -> isCancelled.set(true));
+            stage.showAndWait();
+
+            if (isCancelled.get())
+                return;
+
+            password = field.getText();
+        }
+
+        if (requiresPassword)
+            content = AES.decrypt(content, password);
+
+        if (content.startsWith("Error")) {
+            showError("Error reading database", "Error reading database, the provided password was incorrect");
+            return;
+        }
+
+        JSONArray array = new JSONArray(content);
+        contactListView.getItems().clear();
+        contacts.clear();
+        searchField.clear();
+        noSelectionLabel.setVisible(true);
+        contactDetailsPane.setVisible(false);
+        listUnfocused();
+
+        for (int i = 0; i < array.length(); i++) {
+            Contact c = Contact.toContact(array.getJSONObject(i));
+            contacts.add(c);
+            contactListView.getItems().add(c);
+        }
+    }
+
+    public void saveDB() {
+        if (currentDatabase == null) {
+            saveDBAs();
+            return;
+        }
+
+
+        if (contacts.isEmpty()) {
+            showError("No contacts found", "No contacts to save have been found");
+            return;
+        }
+
+        JSONArray objects = new JSONArray();
+
+        for (Contact c : contacts) {
+            objects.put(Contact.parseJSONObject(c));
+        }
+
+        try (FileWriter writer = new FileWriter(currentDatabase)) {
+            writer.write(objects.toString(4));
+            hasChanged = false;
+        } catch (IOException ex) {
+            showError("Error saving file", "Error saving file:\n" + ex.getMessage());
+        }
+    }
+
+    public void saveDBAs() {
+        if (contacts.isEmpty()) {
+            showError("No contacts", "No contacts to save have been found");
+            return;
+        }
+
+        String password = "";
+
+        JSONArray database = new JSONArray();
+
+        for (Contact c : contacts) {
+            JSONObject object = Contact.parseJSONObject(c);
+            database.put(object);
+        }
+
+        String content = database.toString(4);
 
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setHeaderText("");
         alert.setTitle("Encryption");
-        alert.setContentText("Would you like to turn on password protection for this contact?\n" +
-                "Only use this if the contact you are exporting contains sensitive data");
+        alert.setContentText("Would you like to turn on password protection for this contact database? (recommended)");
         alert.getButtonTypes().set(0, ButtonType.YES);
         alert.getButtonTypes().add(ButtonType.NO);
         Optional<ButtonType> result = alert.showAndWait();
-        if (!result.isPresent() || result.get() == ButtonType.CANCEL)
+
+        if (result.isEmpty() || result.get() == ButtonType.CANCEL)
             return;
 
         if (result.get() == ButtonType.YES) {
@@ -176,9 +358,89 @@ public class MainController {
             stage.setResizable(false);
             stage.setTitle("Password");
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setOnCloseRequest(e -> {
-                isCancelled.set(true);
+            stage.setOnCloseRequest(e -> isCancelled.set(true));
+            stage.showAndWait();
+
+            if (isCancelled.get())
+                return;
+
+            password = passwordField.getText();
+        }
+
+        if (!password.isEmpty())
+            content = AES.encrypt(content, password);
+
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Save Contact Database As...");
+        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Contact Database", "*.cdb"));
+        chooser.setInitialDirectory(new File(DocumentsFolder));
+        chooser.setInitialFileName("database");
+        File file = chooser.showSaveDialog(Main.window);
+
+        if (file == null)
+            return;
+
+        currentDatabase = file;
+        hasChanged = false;
+
+        try (FileWriter writer = new FileWriter(file)) {
+            writer.write(content);
+        } catch (FileNotFoundException e) {
+            showError("Unable to locate file", "Error locating file, please try again later.");
+        } catch (IOException e) {
+            showError("Error writing to file", "Error writing to file.\n" + e.getMessage());
+        }
+    }
+
+    public void exportContact() {
+
+        String password = "";
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setHeaderText("");
+        alert.setTitle("Encryption");
+        alert.setContentText("Would you like to turn on password protection for " + getFocusedContact().toString() + "'s contact?\n" +
+                "Only use this if the contact you are exporting contains sensitive data");
+        alert.getButtonTypes().set(0, ButtonType.YES);
+        alert.getButtonTypes().add(ButtonType.NO);
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.isEmpty() || result.get() == ButtonType.CANCEL)
+            return;
+
+        if (result.get() == ButtonType.YES) {
+            AtomicBoolean isCancelled = new AtomicBoolean(false);
+
+            Stage stage = new Stage();
+
+            VBox root = new VBox();
+
+            Label instructions = new Label("Enter a password:");
+            PasswordField passwordField = new PasswordField();
+            passwordField.setPromptText("abc123");
+            Label instructions2 = new Label("Confirm password:");
+            PasswordField confirmField = new PasswordField();
+            confirmField.setPromptText("Enter password again");
+            Button confirm = new Button("Submit password");
+            confirm.setOnAction(e -> {
+                if (checkPassword(passwordField, confirmField))
+                    stage.close();
             });
+            confirmField.setOnAction(e -> {
+                if (checkPassword(passwordField, confirmField))
+                    stage.close();
+            });
+
+            root.getChildren().addAll(instructions, passwordField, instructions2, confirmField, confirm);
+            root.setSpacing(5);
+            root.setAlignment(Pos.CENTER);
+
+            Scene scene = new Scene(root, 300, 200);
+
+            stage.setScene(scene);
+            stage.setResizable(false);
+            stage.setTitle("Password");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setOnCloseRequest(e -> isCancelled.set(true));
             stage.showAndWait();
 
             if (isCancelled.get())
@@ -189,22 +451,14 @@ public class MainController {
 
         Contact c = getFocusedContact();
 
-        JSONObject contact = new JSONObject();
-        contact.put("First Name", c.firstName);
-        contact.put("Middle Name", c.middleName);
-        contact.put("Last Name", c.lastName);
-        contact.put("Company", c.company);
-        contact.put("Phone", c.getPhone());
-        contact.put("Email", c.getEmail());
-        contact.put("Address", c.getAddress());
-        contact.put("Birthday", c.getBirthday());
-        contact.put("Notes", c.notes);
+        JSONObject contact = Contact.parseJSONObject(c);
 
-        String content = contact.toString();
+        String content = contact.toString(4);
 
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Export Contact");
-        chooser.setInitialFileName("example");
+        chooser.setInitialFileName("contact");
+        chooser.setInitialDirectory(new File(DocumentsFolder));
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Contact File", "*.JContact"));
         File file = chooser.showSaveDialog(Main.window);
         if (file == null)
@@ -243,6 +497,7 @@ public class MainController {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Export Contact");
         chooser.setInitialFileName("example");
+        chooser.setInitialDirectory(new File(DocumentsFolder));
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Contact File", "*.JContact"));
         File file = chooser.showOpenDialog(Main.window);
         if (file == null)
@@ -293,9 +548,7 @@ public class MainController {
             stage.setResizable(false);
             stage.setTitle("Password Required");
             stage.initModality(Modality.APPLICATION_MODAL);
-            stage.setOnCloseRequest(e -> {
-                isCancelled.set(true);
-            });
+            stage.setOnCloseRequest(e -> isCancelled.set(true));
             stage.showAndWait();
 
             if (isCancelled.get())
@@ -318,15 +571,11 @@ public class MainController {
 
         JSONObject object = new JSONObject(content);
 
-        Contact c = new Contact((String) object.get("First Name"), (String) object.get("Middle Name"), (String) object.get("Last Name"), (String) object.get("Company"));
-        c.setPhone((String) object.get("Phone"));
-        c.setEmail((String) object.get("Email"));
-        c.setAddress((String) object.get("Address"));
-        c.setBirthday((String) object.get("Birthday"));
-        c.notes = (String) object.get("Notes");
+        Contact c = Contact.toContact(object);
 
         contactListView.getItems().add(c);
         contacts.add(c);
+        hasChanged = true;
     }
 
     public void listFocused() {
@@ -381,9 +630,7 @@ public class MainController {
         source.setText("Copied...");
 
         PauseTransition pause = new PauseTransition(Duration.millis(1500));
-        pause.setOnFinished(e -> {
-            source.setText("Copy");
-        });
+        pause.setOnFinished(e -> source.setText("Copy"));
         pause.play();
     }
 
@@ -393,9 +640,7 @@ public class MainController {
         source.setText("Copied...");
 
         PauseTransition pause = new PauseTransition(Duration.millis(1500));
-        pause.setOnFinished(e -> {
-            source.setText("Copy");
-        });
+        pause.setOnFinished(e -> source.setText("Copy"));
         pause.play();
     }
 
@@ -405,9 +650,7 @@ public class MainController {
         source.setText("Copied...");
 
         PauseTransition pause = new PauseTransition(Duration.millis(1500));
-        pause.setOnFinished(e -> {
-            source.setText("Copy");
-        });
+        pause.setOnFinished(e -> source.setText("Copy"));
         pause.play();
     }
 
@@ -417,9 +660,7 @@ public class MainController {
         source.setText("Copied...");
 
         PauseTransition pause = new PauseTransition(Duration.millis(1500));
-        pause.setOnFinished(e -> {
-            source.setText("Copy");
-        });
+        pause.setOnFinished(e -> source.setText("Copy"));
         pause.play();
     }
 
@@ -429,9 +670,7 @@ public class MainController {
         source.setText("Copied...");
 
         PauseTransition pause = new PauseTransition(Duration.millis(1500));
-        pause.setOnFinished(e -> {
-            source.setText("Copy");
-        });
+        pause.setOnFinished(e -> source.setText("Copy"));
         pause.play();
     }
 
@@ -461,12 +700,7 @@ public class MainController {
             stage.setScene(scene);
             stage.showAndWait();
         } catch (IOException ex) {
-            ex.printStackTrace();
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setTitle("FXML Load Error");
-            alert.setHeaderText("Unable to load about.fxml");
-            alert.setContentText(ex.getMessage());
-            alert.showAndWait();
+            showError("Error loading fxml file", "Unable to load about.fxml\n" + ex.getMessage());
         }
     }
 

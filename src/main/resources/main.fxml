@@ -30,11 +30,11 @@
               <menus>
                 <Menu mnemonicParsing="false" text="File">
                   <items>
-                        <MenuItem mnemonicParsing="false" text="New contact database" />
-                        <MenuItem mnemonicParsing="false" text="Open contact database" />
+                        <MenuItem mnemonicParsing="false" text="New" onAction="#newDB" />
+                        <MenuItem mnemonicParsing="false" text="Open" onAction="#openDB" />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem mnemonicParsing="false" text="Save contact database" />
-                        <MenuItem mnemonicParsing="false" text="Save contact database as..." />
+                        <MenuItem mnemonicParsing="false" text="Save " onAction="#saveDB" />
+                        <MenuItem mnemonicParsing="false" text="Save as..." onAction="#saveDBAs" />
                         <SeparatorMenuItem mnemonicParsing="false" />
                     <MenuItem mnemonicParsing="false" onAction="#close" text="Close" />
                   </items>

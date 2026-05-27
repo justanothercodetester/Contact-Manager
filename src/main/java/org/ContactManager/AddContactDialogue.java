@@ -17,11 +17,14 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 public class AddContactDialogue {
 
-    public static void add(ListView<Contact> contactListView, ArrayList<Contact> contacts) {
+    public static boolean add(ListView<Contact> contactListView, ArrayList<Contact> contacts) {
+        AtomicBoolean hasChanged = new AtomicBoolean(false);
+
         Stage stage = new Stage();
 
         VBox root = new VBox();
@@ -222,6 +225,7 @@ public class AddContactDialogue {
 
             contactListView.getItems().add(contact);
             contacts.add(contact);
+            hasChanged.set(true);
 
             stage.close();
         });
@@ -241,9 +245,13 @@ public class AddContactDialogue {
         stage.setTitle("Add contact dialogue");
         stage.setResizable(false);
         stage.showAndWait();
+
+        return hasChanged.get();
     }
 
-    public static void edit(Contact contact) {
+    public static boolean edit(Contact contact) {
+        AtomicBoolean hasChanged = new AtomicBoolean(false);
+
         Stage stage = new Stage();
 
         VBox root = new VBox();
@@ -429,6 +437,8 @@ public class AddContactDialogue {
             contact.setBirthday(birthdayTextBox.getText());
             contact.notes = notesTextArea.getText();
 
+            hasChanged.set(true);
+
             stage.close();
         });
 
@@ -447,5 +457,7 @@ public class AddContactDialogue {
         stage.setTitle("Edit contact dialogue");
         stage.setResizable(false);
         stage.showAndWait();
+
+        return hasChanged.get();
     }
 }
