@@ -68,6 +68,12 @@ public class MainController {
     public MenuItem exportContactMenuItem;
 
     @FXML
+    private MenuItem exitProgram;
+
+    @FXML
+    private SeparatorMenuItem exitAndCloseSeparator;
+
+    @FXML
     private TextField searchField;
 
     @FXML
@@ -80,6 +86,12 @@ public class MainController {
 
     @FXML
     public void initialize() {
+        if (!SystemTray.isSupported()) {
+            exitProgram.setVisible(false);
+            exitAndCloseSeparator.setVisible(false);
+        }
+
+        Main.controller = this;
         contacts = new ArrayList<>();
 
         // Add listener for when an item is selected/focused
@@ -705,7 +717,34 @@ public class MainController {
     }
 
     public void close() {
+        if (!SystemTray.isSupported())
+            exit();
         Main.window.close();
+    }
+
+    public void exit() {
+        if (!Main.window.isShowing())
+            Main.window.show();
+
+        if (hasChanged && !contacts.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.setTitle("Unsaved changed");
+            alert.setHeaderText("");
+            alert.setContentText("You have some unsaved changes to your contacts list. Would you like to save them?");
+            alert.getButtonTypes().clear();
+            alert.getButtonTypes().addAll(ButtonType.YES, ButtonType.NO, ButtonType.CANCEL);
+            Optional<ButtonType> result = alert.showAndWait();
+
+            if (!result.isPresent() || result.get() == ButtonType.CANCEL) {
+                return;
+            }
+
+            if (result.get() == ButtonType.YES) {
+                saveDB();
+            }
+        }
+        Main.window.close();
+        System.exit(0);
     }
 
     public void showError(String title, String text) {

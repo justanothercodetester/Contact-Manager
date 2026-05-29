@@ -63,6 +63,8 @@ public class InstanceManager {
                         if (message.equals("SHOW")) {
                             System.out.println("Another instance was run. Focusing window now.");
                             Platform.runLater(() -> {
+                                if (!stage.isShowing())
+                                    stage.show();
                                 stage.toFront();
                                 stage.requestFocus();
                             });

@@ -30,13 +30,15 @@
               <menus>
                 <Menu mnemonicParsing="false" text="File">
                   <items>
-                        <MenuItem mnemonicParsing="false" text="New" onAction="#newDB" />
-                        <MenuItem mnemonicParsing="false" text="Open" onAction="#openDB" />
+                        <MenuItem mnemonicParsing="false" onAction="#newDB" text="New" />
+                        <MenuItem mnemonicParsing="false" onAction="#openDB" text="Open" />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem mnemonicParsing="false" text="Save " onAction="#saveDB" />
-                        <MenuItem mnemonicParsing="false" text="Save as..." onAction="#saveDBAs" />
+                        <MenuItem mnemonicParsing="false" onAction="#saveDB" text="Save " />
+                        <MenuItem mnemonicParsing="false" onAction="#saveDBAs" text="Save as..." />
                         <SeparatorMenuItem mnemonicParsing="false" />
                     <MenuItem mnemonicParsing="false" onAction="#close" text="Close" />
+                        <SeparatorMenuItem mnemonicParsing="false" fx:id="exitAndCloseSeparator" />
+                        <MenuItem mnemonicParsing="false" onAction="#exit" text="Exit Program" fx:id="exitProgram" />
                   </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Edit">
@@ -45,15 +47,15 @@
                         <MenuItem fx:id="editContactMenu" disable="true" mnemonicParsing="false" onAction="#editContactButton" text="Edit contact" />
                         <MenuItem fx:id="deleteContactMenu" disable="true" mnemonicParsing="false" onAction="#deleteContactButton" text="Remove contact" />
                         <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem mnemonicParsing="false" text="Import contact" onAction="#importContact" />
-                        <MenuItem fx:id="exportContactMenuItem" mnemonicParsing="false" text="Export contact" disable="true" onAction="#exportContact" />
+                        <MenuItem mnemonicParsing="false" onAction="#importContact" text="Import contact" />
+                        <MenuItem fx:id="exportContactMenuItem" disable="true" mnemonicParsing="false" onAction="#exportContact" text="Export contact" />
                         <SeparatorMenuItem mnemonicParsing="false" />
                         <RadioMenuItem mnemonicParsing="false" onAction="#darkMode" text="Dark mode" />
                      </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Help">
                   <items>
-                    <MenuItem mnemonicParsing="false" text="About" onAction="#showInfo" />
+                    <MenuItem mnemonicParsing="false" onAction="#showInfo" text="About" />
                   </items>
                 </Menu>
               </menus>
